@@ -27,22 +27,46 @@ with open ('fleurs.txt', 'r') as f:
 book={
     'chapters':[]
 }
-state='PREFACE'
+
+state='START'
 current_chapter = None
 current_poem = None
 
 preface=''
+meta=''
+au_lecteur=''
+
 for i,line in enumerate(lines):
     line=line.strip()
-    if state=='PREFACE':
+
+    if state=='START':
+        if 'START OF THIS PROJECT GUTENBERG EBOOK' in line:
+            state='META'
+    elif state=='META':
+        if 'PRÉFACE' in line:
+            book['meta']=meta
+            state='PREFACE'
+        else:
+            meta+=line+'\n'
+    elif state=='PREFACE':
         if 'AU LECTEUR' in line:
-            book['preface']=preface
-            state='BOOK'
+            book['preface']= preface
+            state='AU LECTEUR'
         else:
             preface+=line+'\n'
+    elif state=='AU LECTEUR':
+        if "Hypocrite lecteur" in line:
+            au_lecteur += line +'\n'
+            book['chapters'].append({'title' : 'AU LECTEUR', 'poem':au_lecteur})
+            state="BOOK"
+        else:
+            au_lecteur += line
+
+
     elif state=='BOOK':
         if 'End of the Project Gutenberg EBook of'in line:
             break
+
         if is_title(line):
             if is_next_line_title(lines, line, i):
                 if current_chapter is not None:
