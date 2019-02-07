@@ -1,3 +1,5 @@
+import json
+
 import re
 from pprint import pprint
 ROMAN_NUMBER=re.compile(r'^[\r\n\sIVX]+$')
@@ -58,5 +60,9 @@ for i,line in enumerate(lines):
 
 current_chapter['poems'].append(current_poem)
 book['chapters'].append(current_chapter)
-pprint(book['chapters'])
-print('modifier22')
+
+
+with open('stockage.json','w') as fd:
+    json.dump(book, fd, indent=2, ensure_ascii=False )
+
+
