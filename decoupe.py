@@ -9,14 +9,16 @@ DEDICACE=re.compile(r'^\s*A\s+(?!UNE)|[A-Z]\.')
 def is_next_line_title(lines, line, i):
     while is_useless(lines[i+1]):
         i+=1
-    return is_title(lines[i+1])
+    if is_exception(lines[i+1]):
+        return 0
+    else:
+        return is_title(lines[i+1])
 
 def is_exception(line):
     return 'STATUE ALLÉGORIQUE DANS LE GOUT DE LA RENAISSANCE' in line or 'STATUAIRE' in line or 'LES TÉNÈBRE' in line or 'LE PARFUM' in line or 'LE CADRE' in line or 'LE PORTRAIT' in line
 
-
 def is_useless(line):
-    return not line.strip() or bool(DEDICACE.search(line)) or bool(ROMAN_NUMBER.search(line)) or is_exception(line)
+    return not line.strip() or bool(DEDICACE.search(line)) or bool(ROMAN_NUMBER.search(line))
 
 def is_title(line):
     return line.isupper() and not bool(ROMAN_NUMBER.search(line)) and not bool(DEDICACE.search(line)) and not is_exception(line)
@@ -60,7 +62,7 @@ for i,line in enumerate(lines):
             book['chapters'].append({'title' : 'AU LECTEUR', 'poem':au_lecteur})
             state="BOOK"
         else:
-            au_lecteur += line
+            au_lecteur += line +'\n'
 
 
     elif state=='BOOK':
