@@ -3,9 +3,12 @@ import json
 import nltk
 from pprint import pprint
 from nltk.corpus import treebank
-DEUX_MOTS=re.compile(r'[a-zA-Z]+[\-\'][a-zA-Z]+')
-PUNCT_or_NUMBER=re.compile(r'^[.,;:\-!_?()«» 0-9]+|[.,\-;:«»!_() ?0-9]+$')
-VIDE=re.compile(r'^[ \r\n\s]+|[ \r\n\s]+$')
+from nltk.book import FreqDist
+PUNCT_or_NUMBER=re.compile(r'[.!?,;:\'\-\s\n\r_()\[\]«» 0-9]')
+
+def squeeze(word):
+    return re.sub(PUNCT_or_NUMBER, ' ', word)
+
 with open('stockage.json', 'r') as f:
     book=json.load(f)
 
@@ -25,20 +28,45 @@ for part, value in book.items():
 
 tokens1= []
 
+
+
 for word in tokens:
-    word=re.sub(VIDE, ' ', word)
-    if bool((PUNCT_or_NUMBER.search(word))):
-        word=re.sub(PUNCT_or_NUMBER, '', word )
-        if word == '':
-            word=None
-    elif bool(DEUX_MOTS.search(word)):
-        word=re.sub(DEUX_MOTS, ' ', word )
-        tokens+=nltk.word_tokenize(word)
-        continue
-    if word:
+    word=squeeze(word)
+    word=word.lower()
+    if ' ' in  word:
+        word=word.split()
+        tokens1+=word
+    else:
         tokens1.append(word)
 
-print(tokens1)
+
+tokens1=sorted(tokens1)
+
+def lexical_diversity(text):
+    return len(set(text)) / len(text)
+
+def percentage(word, tokens):
+    return 100 * (tokens.count(word) / len(tokens))
+
+
+fdist=FreqDist(tokens1)
+tokens1=fdist.most_common(len(tokens1))
+
+print(fdist.most_common(10))
+
+
+print('le mot %s est présent à ' % 'comme', percentage('comme',tokens), '% dans le texte')
+print('la diversité lexicale du texte est de ', lexical_diversity(tokens), '%')
+
+
+
+from pylab import *
+
+x = array([1, 3, 4, 6])
+y = array([2, 3, 5, 1])
+plot(x, y)
+
+show()
 
 
 with open('stockage1.json','w') as fd:
